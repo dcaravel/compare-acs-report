@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"text/tabwriter"
 
 	"golang.org/x/text/language"
@@ -19,7 +20,7 @@ import (
 
 func usage() {
 	fmt.Println("Usage:")
-	fmt.Printf("  %s <file1> <file2>\n", filepath.Base(os.Args[0]))
+	fmt.Printf("  %s <file1> <file2> [grep str]\n", filepath.Base(os.Args[0]))
 }
 
 func main() {
@@ -31,14 +32,19 @@ func main() {
 	lFile := os.Args[1]
 	rFile := os.Args[2]
 
+	var grepStr string
+	if len(os.Args) > 3 {
+		grepStr = os.Args[3]
+	}
+
 	// fmt.Printf("lFile: %q, rFile: %q\n", lFile, rFile)
 
-	l, err := doit(lFile)
+	l, err := doit(lFile, grepStr)
 	if err != nil {
 		panic(err)
 	}
 
-	r, err := doit(rFile)
+	r, err := doit(rFile, grepStr)
 	if err != nil {
 		panic(err)
 	}
@@ -348,7 +354,7 @@ type FileStats struct {
 	MapComponentCVECount                        map[string]int
 }
 
-func doit(path string) (*FileStats, error) {
+func doit(path string, grepStr string) (*FileStats, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -398,6 +404,12 @@ func doit(path string) (*FileStats, error) {
 			}
 			return nil, err
 		}
+
+		if grepStr != "" && !strings.Contains(strings.Join(record, ","), grepStr) {
+			// skip if grepstr not found
+			continue
+		}
+
 		recordCount++
 
 		cluster := record[0]

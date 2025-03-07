@@ -3,8 +3,9 @@ Compares two ACS vuln reports
 Usage:
 
 ```
-go run . <report1> <report2>
+go run . <report1> <report2> [grep]
 ```
+Use a `grep` to filter out lines to that do not contain the string (can limit results to a single image digest for example)
 
 Sample output:
 
